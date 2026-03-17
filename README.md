@@ -19,7 +19,7 @@ Rust client library for the [Proxmox VE REST API](https://pve.proxmox.com/pve-do
 
 ```toml
 [dependencies]
-proxmox-client = "0.8.0"
+proxmox-client = "0.9.1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
