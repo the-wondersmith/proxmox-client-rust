@@ -19,7 +19,7 @@ Rust client library for the [Proxmox VE REST API](https://pve.proxmox.com/pve-do
 
 ```toml
 [dependencies]
-proxmox-client = "0.9.1"
+proxmox-client = "0.9.2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -27,8 +27,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 ### API token authentication (preferred for automation)
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
+```rust
 let client = proxmox_client::ProxmoxClient::with_api_token(
     "https://pve:8006",
     "root@pam!mytoken",
@@ -37,14 +36,11 @@ let client = proxmox_client::ProxmoxClient::with_api_token(
 
 let version = client.version().await?;
 println!("Proxmox VE {}", version.version.unwrap_or_default());
-# Ok(())
-# }
 ```
 
 ### Ticket-based login with self-signed cert support
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
+```rust
 let client = proxmox_client::ProxmoxClient::builder("https://pve:8006")
     .accept_invalid_certs(true)
     .build()?;
@@ -52,17 +48,13 @@ client.login("root@pam", "password").await?;
 
 let version = client.version().await?;
 println!("Proxmox VE {}", version.version.unwrap_or_default());
-# Ok(())
-# }
 ```
 
 ## API overview
 
 ### Authentication
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 // Ticket-based login
 client.login("root@pam", "password").await?;
 
@@ -72,15 +64,11 @@ client.login("root@pam", "password").await?;
 
 // Change a user's password
 client.change_password("user@pam", "new-password").await?;
-# Ok(())
-# }
 ```
 
 ### Nodes
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 // List all cluster nodes
 let nodes = client.list_nodes().await?;
 for node in &nodes {
@@ -91,15 +79,11 @@ for node in &nodes {
 let status = client.get_node_status("pve1").await?;
 let dns = client.get_node_dns("pve1").await?;
 let ver = client.version().await?;
-# Ok(())
-# }
 ```
 
 ### QEMU virtual machines
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::nodes::qemu::{VmCreateParams, VmCloneParams, VmResizeParams};
 
 // List VMs on a node
@@ -130,15 +114,11 @@ client.resize_vm_disk("pve1", 100, &resize).await?;
 
 // Delete a VM
 client.delete_vm("pve1", 100, None).await?;
-# Ok(())
-# }
 ```
 
 Snapshots and configuration:
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::nodes::qemu::SnapshotCreateParams;
 
 // Snapshots
@@ -153,15 +133,11 @@ client.delete_vm_snapshot("pve1", 100, "before-upgrade").await?;
 
 // Configuration
 let config = client.get_vm_config("pve1", 100).await?;
-# Ok(())
-# }
 ```
 
 ### LXC containers
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::nodes::lxc::{ContainerCreateParams, ContainerResizeParams};
 
 // List containers
@@ -189,15 +165,11 @@ client.resize_container_disk("pve1", 200, &resize).await?;
 
 // Delete
 client.delete_container("pve1", 200, None).await?;
-# Ok(())
-# }
 ```
 
 ### Storage
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::{StorageCreateParams, StorageUpdateParams};
 
 // List datacenter-level storage
@@ -216,15 +188,11 @@ let mut update = StorageUpdateParams::default();
 update.content = Some("backup".into());
 client.update_storage("nfs-backup", &update).await?;
 client.delete_storage("nfs-backup").await?;
-# Ok(())
-# }
 ```
 
 ### Pools
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::{PoolCreateParams, PoolUpdateParams};
 
 let pools = client.list_pools().await?;
@@ -233,15 +201,11 @@ pool_params.comment = Some("Development VMs".into());
 client.create_pool(&pool_params).await?;
 let pool = client.get_pool("dev-pool").await?;
 client.delete_pool("dev-pool").await?;
-# Ok(())
-# }
 ```
 
 ### Access control
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::access::users::UserCreateParams;
 use proxmox_client::access::groups::GroupCreateParams;
 use proxmox_client::access::roles::RoleCreateParams;
@@ -276,15 +240,11 @@ let tfa = client.list_tfa().await?;
 
 // Realms / authentication domains
 let realms = client.list_realms().await?;
-# Ok(())
-# }
 ```
 
 ### Cluster
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 // Resources and status
 let resources = client.list_cluster_resources().await?;
 let status = client.get_cluster_status().await?;
@@ -305,15 +265,11 @@ let accounts = client.list_acme_accounts().await?;
 // SDN
 let vnets = client.list_sdn_vnets().await?;
 let zones = client.list_sdn_zones().await?;
-# Ok(())
-# }
 ```
 
 ### Node operations
 
-```rust,no_run
-# async fn example() -> proxmox_client::Result<()> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 // Tasks
 let tasks = client.list_tasks("pve1", None).await?;
 let task = client.get_task_status("pve1", "UPID:pve1:...").await?;
@@ -332,17 +288,13 @@ let updates = client.list_apt_updates("pve1").await?;
 
 // Certificates
 let certs = client.list_certificates("pve1").await?;
-# Ok(())
-# }
 ```
 
 ## Error handling
 
 All methods return `proxmox_client::Result<T>`, which uses a typed `Error` enum:
 
-```rust,no_run
-# async fn example() -> std::result::Result<(), Box<dyn std::error::Error>> {
-# let client = proxmox_client::ProxmoxClient::with_api_token("https://pve:8006", "root@pam!t", "x")?;
+```rust
 use proxmox_client::Error;
 
 match client.get_vm_status("pve1", 999).await {
@@ -356,8 +308,6 @@ match client.get_vm_status("pve1", 999).await {
     Err(Error::InvalidVmid(id)) => println!("VMID {id} is out of range"),
     Err(e) => eprintln!("unexpected error: {e}"),
 }
-# Ok(())
-# }
 ```
 
 ## Security
