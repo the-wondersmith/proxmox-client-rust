@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::client::ProxmoxClient;
-use crate::error::Result;
-use crate::nodes::qemu::firewall::{FirewallOptions, FirewallRule, FirewallRuleCreateParams};
-use crate::validation::validate_resource_id;
+use crate::{
+    client::ProxmoxClient,
+    error::Result,
+    nodes::qemu::firewall::{FirewallOptions, FirewallRule, FirewallRuleCreateParams},
+    validation::validate_resource_id,
+};
 
 /// An SDN VNet.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -26,7 +28,11 @@ pub struct SdnVnet {
     pub tag: Option<i64>,
 
     /// Whether the VNet is VLAN-aware.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub vlanaware: Option<bool>,
 
     /// Resource type.
@@ -61,7 +67,11 @@ pub struct SdnVnetCreateParams {
     pub tag: Option<i64>,
 
     /// Whether the VNet is VLAN-aware.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub vlanaware: Option<bool>,
 }
 
@@ -73,6 +83,56 @@ impl SdnVnetCreateParams {
             zone: zone.into(),
             ..Default::default()
         }
+    }
+}
+
+/// A DHCP range of an SDN subnet
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct DhcpRangeMap {
+    #[serde(rename = "start-address")]
+    pub start: String,
+    #[serde(rename = "end-address")]
+    pub end: String,
+}
+
+impl DhcpRangeMap {
+    #[cfg(test)]
+    pub fn new(start: impl ToString, end: impl ToString) -> Self {
+        let (start, end) = (start.to_string(), end.to_string());
+
+        Self { start, end }
+    }
+}
+
+/// TODO
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+#[serde(untagged)]
+pub enum SdnSubnetDhcpRange {
+    #[default]
+    Empty,
+    String(String),
+    Mapped(Vec<DhcpRangeMap>),
+}
+
+impl SdnSubnetDhcpRange {
+    fn is_empty(&self) -> bool {
+        match self {
+            Self::Empty => true,
+            Self::String(value) => value.is_empty(),
+            Self::Mapped(ranges) => ranges.is_empty(),
+        }
+    }
+
+    #[cfg(test)]
+    fn string(value: impl ToString) -> Self {
+        Self::String(value.to_string())
+    }
+
+    #[cfg(test)]
+    fn mapped(start: impl ToString, end: impl ToString) -> Self {
+        Self::Mapped(vec![DhcpRangeMap::new(start, end)])
     }
 }
 
@@ -93,7 +153,11 @@ pub struct SdnSubnet {
     pub gateway: Option<String>,
 
     /// Whether SNAT is enabled.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub snat: Option<bool>,
 
     /// DNS zone prefix.
@@ -101,8 +165,12 @@ pub struct SdnSubnet {
     pub dns_zone_prefix: Option<String>,
 
     /// DHCP range.
-    #[serde(rename = "dhcp-range", skip_serializing_if = "Option::is_none")]
-    pub dhcp_range: Option<String>,
+    #[serde(
+        default,
+        rename = "dhcp-range",
+        skip_serializing_if = "SdnSubnetDhcpRange::is_empty"
+    )]
+    pub dhcp_range: SdnSubnetDhcpRange,
 
     /// DHCP DNS server.
     #[serde(rename = "dhcp-dns-server", skip_serializing_if = "Option::is_none")]
@@ -133,7 +201,11 @@ pub struct SdnSubnetCreateParams {
     pub gateway: Option<String>,
 
     /// Whether SNAT is enabled.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub snat: Option<bool>,
 
     /// DNS zone prefix.
@@ -322,7 +394,11 @@ pub struct SdnController {
     pub bgp_multipath_as_path_relax: Option<bool>,
 
     /// Whether EBGP is enabled.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub ebgp: Option<bool>,
 
     /// EBGP multihop.
@@ -370,7 +446,11 @@ pub struct SdnControllerCreateParams {
     pub node: Option<String>,
 
     /// Whether EBGP is enabled.
-    #[serde(default, skip_serializing_if = "Option::is_none", with = "crate::serde_helpers::option_bool_as_int")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub ebgp: Option<bool>,
 }
 
@@ -1315,13 +1395,13 @@ mod tests {
 
     #[test]
     fn sdn_subnet_serde_roundtrip() {
-        let subnet = SdnSubnet {
+        let mut subnet = SdnSubnet {
             subnet: Some("10.0.0.0/24".to_string()),
             subnet_type: Some("subnet".to_string()),
             gateway: Some("10.0.0.1".to_string()),
             snat: Some(true),
             dns_zone_prefix: None,
-            dhcp_range: None,
+            dhcp_range: Default::default(),
             dhcp_dns_server: None,
             vnet: Some("myvnet".to_string()),
             digest: None,
@@ -1329,6 +1409,21 @@ mod tests {
 
         let json = serde_json::to_string(&subnet).unwrap();
         let deserialized: SdnSubnet = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(subnet, deserialized);
+
+        subnet.dhcp_range = SdnSubnetDhcpRange::string("10.0.0.10-10.0.0.20");
+
+        let json = serde_json::to_string(&subnet).unwrap();
+        let deserialized: SdnSubnet = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(subnet, deserialized);
+
+        subnet.dhcp_range = SdnSubnetDhcpRange::mapped("10.0.0.40", "10.0.0.60");
+
+        let json = serde_json::to_string(&subnet).unwrap();
+        let deserialized: SdnSubnet = serde_json::from_str(&json).unwrap();
+
         assert_eq!(subnet, deserialized);
     }
 

@@ -57,7 +57,7 @@ pub use replication::{ReplicationJob, ReplicationJobCreateParams};
 pub use resources::{ClusterLogEntry, ClusterResource, ClusterStatus};
 pub use sdn::{
     SdnController, SdnControllerCreateParams, SdnDns, SdnDnsCreateParams, SdnIpMapping, SdnIpam,
-    SdnIpamCreateParams, SdnSubnet, SdnSubnetCreateParams, SdnVnet, SdnVnetCreateParams, SdnZone,
-    SdnZoneCreateParams,
+    SdnIpamCreateParams, SdnSubnet, SdnSubnetCreateParams, SdnSubnetDhcpRange, SdnVnet,
+    SdnVnetCreateParams, SdnZone, SdnZoneCreateParams,
 };
 pub use sdn_fabrics::{SdnFabric, SdnFabricCreateParams, SdnFabricNode, SdnFabricNodeCreateParams};
