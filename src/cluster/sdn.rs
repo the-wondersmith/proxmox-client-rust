@@ -1096,7 +1096,7 @@ impl ProxmoxClient {
         validate_resource_id(vnet)?;
         let response = self
             .delete(&format!("/cluster/sdn/vnets/{vnet}/ips"))?
-            .json(params)
+            .query(params)
             .send()
             .await?;
         Self::handle_error(response, &format!("SDN VNet {vnet} IP deletion")).await?;
