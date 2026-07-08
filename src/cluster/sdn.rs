@@ -299,6 +299,10 @@ pub struct SdnZone {
     /// Digest.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub digest: Option<String>,
+
+    /// DHCP type
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dhcp: Option<String>,
 }
 
 /// Parameters for creating an SDN zone.
@@ -1264,17 +1268,9 @@ mod tests {
             mtu: Some(1450),
             nodes: Some("pve1,pve2".to_string()),
             ipam: Some("pve".to_string()),
-            dns: None,
-            reversedns: None,
-            dnszone: None,
-            controller: None,
             vxlan_port: Some(4789),
             peers: Some("10.0.0.1,10.0.0.2".to_string()),
-            tag: None,
-            vlan_protocol: None,
-            pending: None,
-            status: None,
-            digest: None,
+            ..Default::default()
         };
 
         let json = serde_json::to_string(&zone).unwrap();
