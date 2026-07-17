@@ -35,6 +35,16 @@ pub struct SdnVnet {
     )]
     pub vlanaware: Option<bool>,
 
+    /// Whether all interfaces on this VNet's bridge get the `isolated`
+    /// bridge-port flag (guests on the VNet cannot talk to each other laterally).
+    #[serde(
+        rename = "isolate-ports",
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
+    pub isolate_ports: Option<bool>,
+
     /// Resource type.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub vnet_type: Option<String>,
@@ -1226,8 +1236,7 @@ mod tests {
             tag: Some(100),
             vlanaware: Some(false),
             vnet_type: Some("vnet".to_string()),
-            status: None,
-            digest: None,
+            ..Default::default()
         };
 
         let json = serde_json::to_string(&vnet).unwrap();
