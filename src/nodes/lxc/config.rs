@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::client::ProxmoxClient;
-use crate::error::Result;
-use crate::validation::{validate_node_name, validate_vmid};
+use crate::{
+    client::ProxmoxClient,
+    error::Result,
+    validation::{validate_node_name, validate_vmid},
+};
 
 /// Full configuration of an LXC container.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -52,7 +54,11 @@ pub struct ContainerConfig {
     pub searchdomain: Option<String>,
 
     /// Start on boot.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub onboot: Option<bool>,
 
     /// Startup/shutdown order.
@@ -60,7 +66,11 @@ pub struct ContainerConfig {
     pub startup: Option<String>,
 
     /// Protection flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub protection: Option<bool>,
 
     /// Tags (semicolon-separated).
@@ -76,7 +86,11 @@ pub struct ContainerConfig {
     pub features: Option<String>,
 
     /// Unprivileged container.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub unprivileged: Option<bool>,
 
     /// Architecture.
@@ -84,7 +98,11 @@ pub struct ContainerConfig {
     pub arch: Option<String>,
 
     /// Console mode.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub console: Option<bool>,
 
     /// Number of TTYs.
@@ -100,7 +118,11 @@ pub struct ContainerConfig {
     pub lock: Option<String>,
 
     /// Template flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub template: Option<bool>,
 
     /// Configuration digest.
@@ -152,7 +174,11 @@ pub struct ContainerConfigUpdateParams {
     pub searchdomain: Option<String>,
 
     /// Start on boot.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub onboot: Option<bool>,
 
     /// Startup order.
@@ -160,7 +186,11 @@ pub struct ContainerConfigUpdateParams {
     pub startup: Option<String>,
 
     /// Protection flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub protection: Option<bool>,
 
     /// Tags.
