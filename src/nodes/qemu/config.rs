@@ -3,9 +3,11 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::client::ProxmoxClient;
-use crate::error::Result;
-use crate::validation::{validate_node_name, validate_vmid};
+use crate::{
+    client::ProxmoxClient,
+    error::Result,
+    validation::{validate_node_name, validate_vmid},
+};
 
 /// Full configuration of a QEMU VM.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -32,15 +34,27 @@ pub struct VmConfig {
     pub cpu: Option<String>,
 
     /// Memory in MB.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_u64_lenient"
+    )]
     pub memory: Option<u64>,
 
     /// Balloon memory target in MB.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_u64_lenient"
+    )]
     pub balloon: Option<u64>,
 
     /// NUMA enabled.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub numa: Option<bool>,
 
     /// Boot order.
@@ -68,7 +82,11 @@ pub struct VmConfig {
     pub smbios1: Option<String>,
 
     /// Start on boot.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub onboot: Option<bool>,
 
     /// Startup/shutdown order.
@@ -76,7 +94,11 @@ pub struct VmConfig {
     pub startup: Option<String>,
 
     /// Protection flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub protection: Option<bool>,
 
     /// Tags (semicolon-separated).
@@ -124,11 +146,19 @@ pub struct VmConfig {
     pub vga: Option<String>,
 
     /// Tablet device.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub tablet: Option<bool>,
 
     /// KVM hardware virtualization.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub kvm: Option<bool>,
 
     /// CPU limit.
@@ -140,7 +170,11 @@ pub struct VmConfig {
     pub cpuunits: Option<u32>,
 
     /// Freeze CPU at startup.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub freeze: Option<bool>,
 
     /// Lock reason.
@@ -148,7 +182,11 @@ pub struct VmConfig {
     pub lock: Option<String>,
 
     /// Template flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub template: Option<bool>,
 
     /// Watchdog device.
@@ -196,7 +234,11 @@ pub struct VmConfig {
     pub cicustom: Option<String>,
 
     /// Cloud-init: upgrade.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub ciupgrade: Option<bool>,
 
     /// All indexed parameters: net0-net31, scsi0-scsi30, ide0-ide3,
@@ -230,15 +272,27 @@ pub struct VmConfigUpdateParams {
     pub cpu: Option<String>,
 
     /// Memory in MB.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_u64_lenient"
+    )]
     pub memory: Option<u64>,
 
     /// Balloon memory target in MB.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_u64_lenient"
+    )]
     pub balloon: Option<u64>,
 
     /// NUMA enabled.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub numa: Option<bool>,
 
     /// Boot order.
@@ -258,7 +312,11 @@ pub struct VmConfigUpdateParams {
     pub machine: Option<String>,
 
     /// Start on boot.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub onboot: Option<bool>,
 
     /// QEMU agent settings.
@@ -270,7 +328,11 @@ pub struct VmConfigUpdateParams {
     pub tags: Option<String>,
 
     /// Protection flag.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "crate::serde_helpers::option_bool_as_int"
+    )]
     pub protection: Option<bool>,
 
     /// SCSI controller type.
