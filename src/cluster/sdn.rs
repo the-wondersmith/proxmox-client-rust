@@ -150,9 +150,14 @@ impl SdnSubnetDhcpRange {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct SdnSubnet {
-    /// Subnet ID (CIDR notation).
+    /// Subnet ID (composite identifier, e.g. `<zone>-<network>-<prefixlen>`;
+    /// NOT CIDR notation despite the API's naming — see [`Self::cidr`]).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subnet: Option<String>,
+
+    /// The subnet's actual CIDR (e.g. `10.98.98.0/24`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cidr: Option<String>,
 
     /// Resource type.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
@@ -1402,6 +1407,7 @@ mod tests {
     fn sdn_subnet_serde_roundtrip() {
         let mut subnet = SdnSubnet {
             subnet: Some("10.0.0.0/24".to_string()),
+            cidr: Some("10.0.0.0/24".to_string()),
             subnet_type: Some("subnet".to_string()),
             gateway: Some("10.0.0.1".to_string()),
             snat: Some(true),
